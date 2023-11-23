@@ -49,3 +49,17 @@ echo "(8) Listen"
 
 DATA=`nc -l -p 3333 -w 0`
 
+echo "(12) Test&Store&Send"
+
+PREFIX=`echo $DATA | cut -d " " -f 1`
+
+if [ "$PREFIX" != "FILE_NAME" ]
+then
+	echo "ERROR 3: BAD FILE NAME PREFIX"
+	sleep 1
+	echo "KO_FILE_NAME" | nc $CLIENT 3333
+	exit 3
+fi
+
+
+FILE_NAME=`echo $DATA | cut -d " " -f 2`

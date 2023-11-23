@@ -35,3 +35,21 @@ echo "(6) Listen"
 DATA=`nc -l -p 3333 -w 0`
 
 echo $DATA
+
+echo "(9) Test"
+
+if [ "$DATA" != "OK_HANDSHAKE" ]
+then
+	echo "ERROR 2: BAD HANSHAKE"
+	exit 2
+fi
+
+echo "(10) Send"
+
+sleep 1
+
+echo "FILE_NAME fary1.txt" | nc $SERVER 3333
+
+echo "(11) Listen"
+DATA=`nc -l -p 3333 -w 0`
+
