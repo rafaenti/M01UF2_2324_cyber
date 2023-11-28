@@ -1,10 +1,7 @@
 #!/bin/bash
 
-IP=`ip address | grep inet | grep -i enp0s3 | cut -d " " -f 6 | cut -d "/" -f 1`
-
-echo $IP
-
 SERVER="localhost"
+TIMEOUT=1
 
 echo "Cliente de EFTP"
 
@@ -14,7 +11,7 @@ echo "EFTP 1.0" | nc $SERVER 3333
 
 echo "(2) Listen"
 
-DATA=`nc -l -p 3333 -w 0`
+DATA=`nc -l -p 3333 -w $TIMEOUT`
 
 echo $DATA
 
@@ -32,7 +29,7 @@ echo "BOOOM" | nc $SERVER 3333
 
 echo "(6) Listen"
 
-DATA=`nc -l -p 3333 -w 0`
+DATA=`nc -l -p 3333 -w $TIMEOUT`
 
 echo $DATA
 
@@ -48,16 +45,20 @@ echo "(10) Send"
 
 sleep 1
 
-echo "FILE_NAME fary1.txt" | nc $SERVER 3333
+FILE_NAME="fary1.txt"
+
+FILE_MD5=`echo $FILE_NAME | md5sum | cut -d " " -f 1`
+
+echo "FILE_NAME $FILE_NAME $FILE_MD5" | nc $SERVER 3333
 
 echo "(11) Listen"
-DATA=`nc -l -p 3333 -w 0`
+DATA=`nc -l -p 3333 -w $TIMEOUT`
 
 echo "(14) Test&Send"
 
 if [ "$DATA" != "OK_FILE_NAME" ]
 then
-	echo "ERROR 3: BAD FILE NAME PREFIX"
+	echo "ERROR 3: BAD FILE NAME"
 	exit 3
 fi
 
@@ -67,13 +68,24 @@ cat imgs/fary1.txt | nc $SERVER 3333
 
 
 echo "(15) Listen"
-DATA=`nc -l -p 3333 -w 0`
+DATA=`nc -l -p 3333 -w $TIMEOUT`
 
 if [ "$DATA" != "OK_DATA" ]
 then
 	echo "ERROR 4: BAD DATA"
 	exit 4
 fi
+
+
+echo "(18) Send"
+
+
+FILE_MD5=`cat imgs/$FILE_NAME | md5sum | cut -d " " -f 1`
+
+echo "FILE_MD5 $FILE_MD5" | nc $SERVER 3333
+
+echo "(19) Listen"
+DATA=`nc -l -p 3333 -w $TIMEOUT`
 
 echo "FIN"
 exit 0

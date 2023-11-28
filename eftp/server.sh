@@ -1,12 +1,13 @@
 #!/bin/bash
 
 CLIENT="10.65.0.57"
+TIMEOUT=1
 
 echo "Servidor de EFTP"
 
 echo "(0) Listen"
 
-DATA=`nc -l -p 3333 -w 0`
+DATA=`nc -l -p 3333 -w $TIMEOUT`
 
 echo $DATA
 
@@ -27,7 +28,7 @@ echo "OK_HEADER" | nc $CLIENT 3333
 
 echo "(4) Listen"
 
-DATA=`nc -l -p 3333 -w 0`
+DATA=`nc -l -p 3333 -w $TIMEOUT`
 
 echo $DATA
 
@@ -47,7 +48,9 @@ echo "OK_HANDSHAKE" | nc $CLIENT 3333
 
 echo "(8) Listen"
 
-DATA=`nc -l -p 3333 -w 0`
+DATA=`nc -l -p 3333 -w $TIMEOUT`
+
+echo $DATA
 
 echo "(12) Test&Store&Send"
 
@@ -61,13 +64,27 @@ then
 	exit 3
 fi
 
-
 FILE_NAME=`echo $DATA | cut -d " " -f 2`
+FILE_MD5=`echo $DATA | cut -d " " -f 3`
+
+FILE_MD5_LOCAL=`echo $FILE_NAME | md5sum | cut -d " " -f 1`
+
+if [ "$FILE_MD5" != "$FILE_MD5_LOCAL" ]
+then
+	echo "ERROR 3: BAD FILE NAME MD5"
+	sleep 1
+	echo "KO_FILE_NAME" | nc $CLIENT 3333
+	exit 3
+fi
+
+echo "OK_FILE_NAME" | nc $CLIENT 3333
+
 
 echo "(13) Listen"
 
-DATA=`nc -l -p 3333 -w 0`
+nc -l -p 3333 -w $TIMEOUT > inbox/$FILE_NAME
 
+DATA=`cat inbox/$FILE_NAME`
 
 echo "(16) STORE & SEND"
 
@@ -79,11 +96,20 @@ then
 	exit 4
 fi
 
-echo $DATA > inbox/$FILE_NAME
-
 
 sleep 1
 echo "OK_DATA" | nc $CLIENT 3333
+
+
+echo "(17) Listen"
+
+DATA=`nc -l -p 3333 -w $TIMEOUT`
+
+echo "(20) Test&Send"
+
+
+
+
 
 echo "FIN"
 exit 0
