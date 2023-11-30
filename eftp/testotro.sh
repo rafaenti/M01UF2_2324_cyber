@@ -1,12 +1,9 @@
 #!/bin/bash
 
-if [ $# -eq 0 ]
-then
-	SERVER="localhost"
-elif [ $# -eq 1 ]
-then
-	SERVER=$1
-fi
+echo $#
+echo $0
+
+SERVER="localhost"
 
 IP=`ip address | grep inet | grep -i enp0s3 | cut -d " " -f 6 | cut -d "/" -f 1`
 TIMEOUT=1
@@ -49,7 +46,7 @@ then
 	exit 2
 fi
 
-echo "(10) Send FILE_NAME"
+echo "(10) Send"
 
 sleep 1
 
